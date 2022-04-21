@@ -1,5 +1,5 @@
 export interface AppError {
-  type: 'conflict' | 'unprocessable_entity',
+  type: 'conflict' | 'unprocessable_entity' | 'unauthorized',
   message: string
 }
 
@@ -9,4 +9,8 @@ export function unprocessableEntity(message: string): AppError {
 
 export function conflict(message: string): AppError {
   return { type: 'conflict', message}
+}
+
+export function unauthorized(message: string): AppError {
+  return { type: 'unauthorized', message}
 }

@@ -9,8 +9,8 @@ export default function handleErrors(
     switch(error.type){
       case('unprocessable_entity'): return res.status(422).send(error.message)
       case('conflict'): return res.status(409).send(error.message)
+      case('unauthorized'): return res.status(401).send(error.message)
     }
   }
-
   res.sendStatus(500)
 }
