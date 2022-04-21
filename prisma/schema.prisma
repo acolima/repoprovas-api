@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,4 +5,77 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model Category {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  tests Test[]
+
+  @@map("categories")
+}
+
+model Discipline {
+  id                  Int                   @id @default(autoincrement())
+  name                String                @unique
+  termId              Int
+  terms               Term                  @relation(fields: [termId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  teachersDisciplines teachersDisciplines[]
+
+  @@map("disciplines")
+}
+
+model Session {
+  id     Int    @id @default(autoincrement())
+  token  String
+  userId Int
+  users  User   @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("sessions")
+}
+
+model Teacher {
+  id                  Int                   @id @default(autoincrement())
+  name                String                @unique
+  teachersDisciplines teachersDisciplines[]
+
+  @@map("teachers")
+}
+
+model teachersDisciplines {
+  id           Int        @id @default(autoincrement())
+  teacherId    Int
+  disciplineId Int
+  disciplines  Discipline @relation(fields: [disciplineId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  teachers     Teacher    @relation(fields: [teacherId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  tests        Test[]
+}
+
+model Term {
+  id          Int          @id @default(autoincrement())
+  number      Int          @unique
+  disciplines Discipline[]
+
+  @@map("terms")
+}
+
+model Test {
+  id                  Int                 @id @default(autoincrement())
+  name                String
+  pdfUrl              String
+  categoryId          Int
+  teacherDisciplineId Int
+  categories          Category            @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  teachersDisciplines teachersDisciplines @relation(fields: [teacherDisciplineId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("tests")
+}
+
+model User {
+  id       Int       @id @default(autoincrement())
+  email    String    @unique
+  password String
+  sessions Session[]
+
+  @@map("users")
 }
