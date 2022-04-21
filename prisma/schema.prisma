@@ -26,10 +26,9 @@ model Discipline {
 }
 
 model Session {
-  id     Int    @id @default(autoincrement())
-  token  String
+  id     Int  @id @default(autoincrement())
   userId Int
-  users  User   @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users  User @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@map("sessions")
 }

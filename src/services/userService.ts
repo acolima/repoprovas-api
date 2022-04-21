@@ -27,11 +27,17 @@ export async function login(userData: CreateUser) {
   if(!bcrypt.compareSync(password, user.password))
     throw error.unauthorized('Email e/ou senha incorretos')
 
-  const secretKey = process.env.JWT_SECRET
-  // todo: configuração de expiração do token
-  const token = jwt.sign(email, secretKey)
+  const userSession = await sessionRepository.findByUserId(user.id)
 
-  await sessionRepository.insert({token, userId: user.id})
+  if(userSession){
+    await sessionRepository.deleteSession(user.id)
+  }
+
+  const session = await sessionRepository.insert({userId: user.id})
+
+  const data = {id: session.id}
+  const secretKey = process.env.JWT_SECRET
+  const token = jwt.sign(data, secretKey, { expiresIn: 60*60*24 })
 
   return {token}
 }
