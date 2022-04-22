@@ -39,5 +39,13 @@ export async function login(userData: CreateUser) {
   const secretKey = process.env.JWT_SECRET
   const token = jwt.sign(data, secretKey, { expiresIn: 60*60*24 })
 
-  return {token}
+  return {token, userId: user.id}
+}
+
+export async function logout(userId: number) {
+  const session = await sessionRepository.findByUserId(userId)
+
+  if(session.length === 0) throw error.unauthorized('Sessão não encontrada')
+
+  await sessionRepository.deleteSession(userId)
 }

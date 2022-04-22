@@ -7,5 +7,6 @@ const userRouter = Router()
 
 userRouter.post('/sign-up', schemaValidation(userSchema), userController.create)
 userRouter.post('/login', schemaValidation(userSchema), userController.login)
+userRouter.delete('/logout/:id', userController.logout)
 
 export default userRouter

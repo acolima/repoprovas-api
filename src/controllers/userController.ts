@@ -12,3 +12,11 @@ export async function login(req: Request, res: Response) {
 
   res.status(200).send(auth)
 }
+
+export async function logout(req: Request, res: Response) {
+  const { id: userId } = req.params
+
+  await userService.logout(Number(userId))
+
+  res.sendStatus(200)
+}
