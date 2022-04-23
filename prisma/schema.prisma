@@ -25,14 +25,6 @@ model Discipline {
   @@map("disciplines")
 }
 
-model Session {
-  id     Int  @id @default(autoincrement())
-  userId Int
-  users  User @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  @@map("sessions")
-}
-
 model Teacher {
   id                  Int                   @id @default(autoincrement())
   name                String                @unique
@@ -71,10 +63,9 @@ model Test {
 }
 
 model User {
-  id       Int       @id @default(autoincrement())
-  email    String    @unique
+  id       Int    @id @default(autoincrement())
+  email    String @unique
   password String
-  sessions Session[]
 
   @@map("users")
 }

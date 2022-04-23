@@ -1,9 +1,7 @@
 import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
 import '../setup.js'
 import * as error from '../utils/errorUtils.js'
 import * as userRepository from '../repositories/userRepository.js'
-import * as sessionRepository from '../repositories/sessionRepository.js'
 import { CreateUser } from '../repositories/userRepository.js'
 
 export async function create(userData: CreateUser) {
@@ -17,35 +15,9 @@ export async function create(userData: CreateUser) {
   await userRepository.insert({ email, password: hashedPassword })
 }
 
-export async function login(userData: CreateUser) {
-  const { email, password } = userData
+export async function findById(userId: number) {
+  const user = await userRepository.findById(userId)
+  if(!user) throw error.notFound('User not found')
 
-  const user = await userRepository.findByEmail(email)
-
-  if(!user) throw error.unauthorized('Email e/ou senha incorretos')
-
-  if(!bcrypt.compareSync(password, user.password))
-    throw error.unauthorized('Email e/ou senha incorretos')
-
-  const userSession = await sessionRepository.findByUserId(user.id)
-
-  if(userSession){
-    await sessionRepository.deleteSession(user.id)
-  }
-
-  const session = await sessionRepository.insert({userId: user.id})
-
-  const data = {id: session.id}
-  const secretKey = process.env.JWT_SECRET
-  const token = jwt.sign(data, secretKey, { expiresIn: 60*60*24 })
-
-  return {token, userId: user.id}
-}
-
-export async function logout(userId: number) {
-  const session = await sessionRepository.findByUserId(userId)
-
-  if(session.length === 0) throw error.unauthorized('Sessão não encontrada')
-
-  await sessionRepository.deleteSession(userId)
+  return user
 }
