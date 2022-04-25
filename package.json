@@ -5,7 +5,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "start": "node build/index.js",
     "dev": "fuser -k 4000/tcp & nodemon src/index.ts"
   },
   "keywords": [],
