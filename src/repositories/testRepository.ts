@@ -9,27 +9,25 @@ export async function getInstructor() {
   })
 }
 
-export async function getCategories(instructorId: number) {
-  const tests = await prisma.category.findMany({
-    select:{
+export async function getInstructorTests(instructorId: number) {
+  return await prisma.category.findMany({
+    select: {
       id: true,
       name: true,
       tests: {
         where: {
-          teachersDisciplines:{
+          teachersDisciplines: {
             teacherId: instructorId
           }
         },
-        select:{
+        select: {
           id: true,
           name: true,
           pdfUrl: true,
           teachersDisciplines: {
             select: {
               disciplines: {
-                select:{
-                  name: true
-                }
+                select: { name: true }
               }
             }
           }
@@ -37,6 +35,45 @@ export async function getCategories(instructorId: number) {
       }
     }
   })
-  
-  return tests
+}
+
+export async function getDisciplinesByTerms() {
+	return await prisma.term.findMany({
+		select: {
+			id: true,
+			number: true,
+			disciplines: {
+				select: {
+					id: true,
+					name: true,
+				}
+			}
+		}
+	})
+}
+
+export async function getTestsByDiscipline(disciplineId: number) {
+	return await prisma.category.findMany({
+		select: {
+			id: true,
+			name: true,
+			tests: {
+				where: {
+					disciplineId,
+				},
+				select: {
+					id: true,
+					name: true,
+					pdfUrl: true,
+					teachersDisciplines: {
+						select: {
+							teachers: {
+								select: { name: true }
+							}
+						}
+					}
+				}
+			}
+		}
+	})
 }

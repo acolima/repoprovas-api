@@ -4,7 +4,7 @@ import { tokenValidation } from '../middlewares/tokenValidationMiddleware.js'
 
 const testRouter = Router()
 
-testRouter.get('/tests/instructor', tokenValidation, testController.getByInstructor)
-// testRouter.get('/tests/term', (req, res) => res.sendStatus(200))
+testRouter.get('/tests/instructor', tokenValidation, testController.getTests)
+testRouter.get('/tests/term', tokenValidation, testController.getTests)
 
 export default testRouter
