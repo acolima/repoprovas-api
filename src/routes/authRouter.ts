@@ -7,6 +7,6 @@ import userSchema from '../schemas/userSchema.js'
 const authRouter = Router()
 
 authRouter.post('/login', schemaValidation(userSchema), authController.login)
-authRouter.post('/logout', tokenValidation, (req, res) => res.sendStatus(200))
+authRouter.post('/token', tokenValidation, (req, res) => res.sendStatus(200))
 
 export default authRouter
