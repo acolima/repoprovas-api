@@ -12,6 +12,4 @@ app.use(json())
 app.use(router)
 app.use(handleErrors)
 
-const PORT = process.env.PORT
-
-app.listen(PORT, () => console.log(`server running in ${PORT}`))
+export default app

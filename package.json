@@ -6,8 +6,11 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "start": "node build/index.js",
-    "dev": "fuser -k 4000/tcp & nodemon src/index.ts"
+    "start": "node build/server.js",
+    "dev": "fuser -k 4000/tcp & npx nodemon src/server.ts",
+    "test": "NODE_OPTIONS=--experimental-vm-modules dotenv -e .env.test jest -i",
+    "test-migrate": "npx dotenv -e .env.test prisma migrate dev",
+    "prisma-studio-test": "npx dotenv -e .env.test prisma studio"
   },
   "keywords": [],
   "author": "",
@@ -17,19 +20,29 @@
     "bcrypt": "^5.0.1",
     "cors": "^2.8.5",
     "dotenv": "^16.0.0",
+    "dotenv-cli": "^5.1.0",
     "express": "^4.17.3",
     "express-async-errors": "^3.1.1",
     "joi": "^17.6.0",
     "jsonwebtoken": "^8.5.1"
   },
   "devDependencies": {
+    "@faker-js/faker": "^6.2.0",
     "@types/bcrypt": "^5.0.0",
     "@types/cors": "^2.8.12",
     "@types/express": "^4.17.13",
+    "@types/jest": "^27.4.1",
     "@types/jsonwebtoken": "^8.5.8",
+    "@types/supertest": "^2.0.12",
+    "jest": "^27.0.0",
     "nodemon": "^2.0.15",
     "prisma": "^3.12.0",
+    "supertest": "^6.2.3",
+    "ts-jest": "^27.1.4",
     "ts-node": "^10.7.0",
     "typescript": "^4.6.3"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   }
 }
