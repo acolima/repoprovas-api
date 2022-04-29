@@ -9,3 +9,31 @@ export async function findById(id: number) {
     where: { id }
   })
 }
+
+export async function findByDiscipline(disciplineId: number) {
+  return await prisma.teacher.findMany({
+    select: {
+      id: true,
+      name: true
+    },
+    where: {
+      teachersDisciplines: {
+        some: {
+          disciplineId
+        }
+      }
+    }
+  })
+}
+
+export async function findByName(name: string) {
+  return prisma.teacher.findUnique({
+    where: { name }
+  })
+}
+
+export async function getTeacherDiscipline(disciplineId: number, teacherId: number) {
+  return prisma.teachersDisciplines.findFirst({
+    where: { disciplineId, teacherId }
+  })
+}

@@ -22,4 +22,10 @@ testRouter.get(
   testController.getTests
 )
 
+testRouter.post(
+  '/newTest',
+  tokenValidation,
+  testController.postTest
+)
+
 export default testRouter

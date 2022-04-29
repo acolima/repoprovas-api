@@ -5,3 +5,7 @@ export async function get(){
 
   return instructors
 }
+
+export async function findByDiscipline(disciplineId: number){
+  return await instructorRepository.findByDiscipline(disciplineId)
+}

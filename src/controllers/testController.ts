@@ -20,3 +20,11 @@ export async function getInstructorTests(req: Request, res: Response) {
 
   res.send(tests)
 }
+
+export async function postTest(req: Request, res: Response) {
+  const test = req.body
+
+  await testService.createNewTest(test)
+
+  res.sendStatus(201)
+}

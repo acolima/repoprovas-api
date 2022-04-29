@@ -6,3 +6,11 @@ export async function getInstructors(req: Request, res: Response) {
 
   res.send(instructors)
 }
+
+export async function getByDiscipline(req: Request, res: Response) {
+  const { disciplineId } = req.params
+
+  const instructors = await instructorService.findByDiscipline(Number(disciplineId))
+
+  res.send(instructors)
+}

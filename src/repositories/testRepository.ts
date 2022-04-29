@@ -1,4 +1,7 @@
 import { prisma } from '../db.js'
+import { Test } from '@prisma/client'
+
+export type CreateTest = Omit<Test, 'id'>
 
 export async function getInstructorTests(instructorId: number) {
   return await prisma.category.findMany({
@@ -67,4 +70,10 @@ export async function getTestsByDiscipline(disciplineId: number) {
 			}
 		}
 	})
+}
+
+export async function createTest(test: CreateTest) {
+  await prisma.test.create({
+    data: test
+  })
 }
