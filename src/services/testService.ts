@@ -1,7 +1,10 @@
 import * as testRepository from '../repositories/testRepository.js'
+import * as instructorRepository from '../repositories/instructorRepository.js'
+import * as error from '../utils/errorUtils.js'
 
-export async function getByInstructor() {
-  const instructors = await testRepository.getInstructor()
+export async function getTestsByInstructor() {
+  const instructors = await instructorRepository.get()
+
   const tests = []
 
   for (const instructor of instructors) {
@@ -19,7 +22,7 @@ export async function getByInstructor() {
   return tests
 }
 
-export async function getByTerm() {
+export async function getTestsByTerm() {
 	const terms = await testRepository.getDisciplinesByTerms()
 
 	const array = []
@@ -44,4 +47,14 @@ export async function getByTerm() {
 	}
 
 	return array
+}
+
+export async function getInstructorTests(id: number) {
+  const instructor = await instructorRepository.findById(id)
+  
+  if(!instructor) throw error.notFound('Instrutor não encontrado')
+
+  const tests = await testRepository.getInstructorTests(id)
+
+  return tests
 }

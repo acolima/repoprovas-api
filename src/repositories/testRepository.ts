@@ -1,14 +1,5 @@
 import { prisma } from '../db.js'
 
-export async function getInstructor() {
-  return await prisma.teacher.findMany({
-    select: {
-      id: true,
-      name: true,
-    },
-  })
-}
-
 export async function getInstructorTests(instructorId: number) {
   return await prisma.category.findMany({
     select: {
