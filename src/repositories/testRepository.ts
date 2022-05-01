@@ -1,7 +1,7 @@
 import { prisma } from '../db.js'
 import { Test } from '@prisma/client'
 
-export type CreateTest = Omit<Test, 'id'>
+export type CreateTest = Omit<Test, 'id' | 'views'>
 
 export async function getInstructorTests(instructorId: number) {
   return await prisma.category.findMany({
@@ -18,6 +18,7 @@ export async function getInstructorTests(instructorId: number) {
           id: true,
           name: true,
           pdfUrl: true,
+          views: true,
           teachersDisciplines: {
             select: {
               disciplines: {
@@ -59,6 +60,7 @@ export async function getTestsByDiscipline(disciplineId: number) {
 					id: true,
 					name: true,
 					pdfUrl: true,
+          views: true,
 					teachersDisciplines: {
 						select: {
 							teachers: {
@@ -75,5 +77,18 @@ export async function getTestsByDiscipline(disciplineId: number) {
 export async function createTest(test: CreateTest) {
   await prisma.test.create({
     data: test
+  })
+}
+
+export async function updateViews(id: number) {
+  return prisma.test.update({
+    where: {
+      id
+    },
+    data: {
+      views: {
+        increment: 1
+      }
+    }
   })
 }

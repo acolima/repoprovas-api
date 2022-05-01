@@ -21,10 +21,18 @@ export async function getInstructorTests(req: Request, res: Response) {
   res.send(tests)
 }
 
-export async function postTest(req: Request, res: Response) {
+export async function createTest(req: Request, res: Response) {
   const test = req.body
 
   await testService.createNewTest(test)
 
   res.sendStatus(201)
+}
+
+export async function updateViewsCount(req: Request, res: Response) {
+  const { id } = req.params
+
+  const response = await testService.updateViewsCount(Number(id))
+
+  res.send(response)
 }

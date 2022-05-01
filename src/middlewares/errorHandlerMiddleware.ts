@@ -5,6 +5,8 @@ export default function handleErrors(
   error: Error | AppError, req: Request, res: Response, next: NextFunction
 ) {
 
+  console.log(error)
+  
   if('type' in error){
     switch(error.type){
       case('unprocessable_entity'): return res.status(422).send(error.message)
@@ -13,6 +15,5 @@ export default function handleErrors(
       case('not_found'): return res.status(404).send(error.message)
     }
   }
-  console.log(error)
   res.sendStatus(500)
 }

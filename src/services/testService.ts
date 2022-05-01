@@ -5,6 +5,14 @@ import * as instructorRepository from '../repositories/instructorRepository.js'
 import * as testRepository from '../repositories/testRepository.js'
 import * as error from '../utils/errorUtils.js'
 
+export interface NewTest {
+  name: string,
+  pdfUrl: string,
+  category: string, 
+  discipline: string,
+  instructor: string
+}
+
 export async function getTestsByInstructor() {
   const instructors = await instructorRepository.get()
 
@@ -62,7 +70,7 @@ export async function getInstructorTests(id: number) {
   return tests
 }
 
-export async function createNewTest(test: any) {
+export async function createNewTest(test: NewTest) {
   
   const category = await categoryRepository.findByName(test.category)
   const discipline = await disciplineRepository.findByName(test.discipline)
@@ -79,4 +87,10 @@ export async function createNewTest(test: any) {
   }
 
   await testRepository.createTest(newTest)
+}
+
+export async function updateViewsCount(id: number) {
+  const response = await testRepository.updateViews(id)
+  
+  return response
 }
