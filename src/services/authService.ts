@@ -1,6 +1,5 @@
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
-import '../setup.js'
 import * as error from '../utils/errorUtils.js'
 import * as userRepository from '../repositories/userRepository.js'
 import { CreateUser } from '../repositories/userRepository.js'

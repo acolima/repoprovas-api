@@ -1,4 +1,3 @@
-import '../setup.js'
 import { NextFunction, Request, Response } from 'express'
 import * as error from '../utils/errorUtils.js'
 import * as userService from '../services/userService.js'
