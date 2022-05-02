@@ -3,7 +3,6 @@ import * as categoryRepository from '../repositories/categoryRepository.js'
 import * as disciplineRepository from '../repositories/disciplineRepository.js'
 import * as instructorRepository from '../repositories/instructorRepository.js'
 import * as testRepository from '../repositories/testRepository.js'
-import * as error from '../utils/errorUtils.js'
 
 export interface NewTest {
   name: string,
@@ -58,16 +57,6 @@ export async function getTestsByTerm() {
 	}
 
 	return array
-}
-
-export async function getInstructorTests(id: number) {
-  const instructor = await instructorRepository.findById(id)
-  
-  if(!instructor) throw error.notFound('Instrutor não encontrado')
-
-  const tests = await testRepository.getInstructorTests(id)
-
-  return tests
 }
 
 export async function createNewTest(test: NewTest) {

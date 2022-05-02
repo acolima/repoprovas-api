@@ -10,11 +10,4 @@ instructorRouter.get(
   instructorController.getByDiscipline
 )
 
-instructorRouter.get(
-  '/instructors', 
-  tokenValidation,
-  instructorController.getInstructors
-)
-
-
 export default instructorRouter

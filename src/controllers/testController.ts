@@ -13,14 +13,6 @@ export async function getTests(req: Request, res: Response) {
   res.send(tests)
 }
 
-export async function getInstructorTests(req: Request, res: Response) {
-  const id = req.params.id
-
-  const tests = await testService.getInstructorTests(Number(id))
-
-  res.send(tests)
-}
-
 export async function createTest(req: Request, res: Response) {
   const test = req.body
 

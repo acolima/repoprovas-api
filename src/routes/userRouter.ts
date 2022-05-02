@@ -5,6 +5,10 @@ import userSchema from '../schemas/userSchema.js'
 
 const userRouter = Router()
 
-userRouter.post('/sign-up', schemaValidation(userSchema), userController.create)
+userRouter.post(
+  '/sign-up', 
+  schemaValidation(userSchema), 
+  userController.create
+)
 
 export default userRouter

@@ -13,12 +13,6 @@ testRouter.get(
 )
 
 testRouter.get(
-  '/instructor/:id', 
-  tokenValidation, 
-  testController.getInstructorTests
-)
-
-testRouter.get(
   '/term', 
   tokenValidation, 
   testController.getTests

@@ -4,6 +4,10 @@ import { tokenValidation } from '../middlewares/tokenValidationMiddleware.js'
 
 const categoryRouter = Router()
 
-categoryRouter.get('/categories', tokenValidation, categoryController.getCategories)
+categoryRouter.get(
+  '/categories', 
+  tokenValidation, 
+  categoryController.getCategories
+)
 
 export default categoryRouter
