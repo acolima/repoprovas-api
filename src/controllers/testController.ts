@@ -4,7 +4,7 @@ import * as testService from '../services/testService.js'
 export async function getTests(req: Request, res: Response) {
 	let tests = []
 
-	if (req.path === '/instructor') {
+	if (req.path === '/instructors') {
 		tests = await testService.getTestsByInstructor()
 	} else {
 		tests = await testService.getTestsByTerm()
