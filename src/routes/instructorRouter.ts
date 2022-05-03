@@ -5,9 +5,9 @@ import { tokenValidation } from '../middlewares/tokenValidationMiddleware.js'
 const instructorRouter = Router()
 
 instructorRouter.get(
-  '/instructors/:disciplineId',
-  tokenValidation,
-  instructorController.getByDiscipline
+	'/instructors/:disciplineId',
+	tokenValidation,
+	instructorController.getInstructorByDiscipline
 )
 
 export default instructorRouter

@@ -1,5 +1,5 @@
 import * as instructorRepository from '../repositories/instructorRepository.js'
 
-export async function findByDiscipline(disciplineId: number){
-  return await instructorRepository.findByDiscipline(disciplineId)
+export async function getByDiscipline(disciplineId: number) {
+	return await instructorRepository.findByDisciplineId(disciplineId)
 }

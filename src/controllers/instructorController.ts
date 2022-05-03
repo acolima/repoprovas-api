@@ -1,10 +1,12 @@
 import { Request, Response } from 'express'
 import * as instructorService from '../services/instructorService.js'
 
-export async function getByDiscipline(req: Request, res: Response) {
-  const { disciplineId } = req.params
+export async function getInstructorByDiscipline(req: Request, res: Response) {
+	const { disciplineId } = req.params
 
-  const instructors = await instructorService.findByDiscipline(Number(disciplineId))
+	const instructors = await instructorService.getByDiscipline(
+		Number(disciplineId)
+	)
 
-  res.send(instructors)
+	res.status(200).send(instructors)
 }

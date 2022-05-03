@@ -1,19 +1,23 @@
 import { prisma } from '../../src/db.js'
-
-export async function truncateUsers() {
-	await prisma.$executeRaw`TRUNCATE TABLE users`
-}
-
-export async function truncateTests() {
-	await prisma.$executeRaw`TRUNCATE TABLE tests`
-}
-
-export async function disconnect() {
-	await prisma.$disconnect()
-}
+import { Response } from 'supertest'
 
 export async function findUsersByEmail(email: string) {
 	return await prisma.user.findMany({
-		where: { email }
+		where: { email },
 	})
+}
+
+export async function findTestByName(name: string) {
+	return await prisma.test.findFirst({
+		where: { name },
+	})
+}
+
+export async function findDiscipline() {
+	return await prisma.discipline.findFirst({})
+}
+
+export function expectedResponseToValidToken(response: Response) {
+	expect(response.body.length).toBeGreaterThanOrEqual(0)
+	expect(response.status).toBe(200)
 }

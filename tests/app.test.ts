@@ -1,10 +1,10 @@
 import supertest from 'supertest'
 import app from '../src'
 import {
-	truncateUsers,
-	disconnect,
 	findUsersByEmail,
-	truncateTests
+	findTestByName,
+	expectedResponseToValidToken,
+	findDiscipline,
 } from './utils/testsUtils'
 import { prisma } from '../src/db.js'
 import { userFactory } from './factories/userFactory.js'
@@ -15,10 +15,16 @@ import { expiredTokenFactory } from './factories/expiredTokenFactory'
 import { testBodyFactory } from './factories/testBodyFactory'
 import { testFactory } from './factories/testFactory'
 
-describe('POST /sign-up', () => {
-	beforeEach(truncateUsers)
-	afterAll(disconnect)
+beforeEach(async () => {
+	await prisma.$executeRaw`TRUNCATE TABLE users`
+	await prisma.$executeRaw`TRUNCATE TABLE tests`
+})
 
+afterAll(async () => {
+	await prisma.$disconnect()
+})
+
+describe('POST /sign-up', () => {
 	it('should return status 201 and persist user given valid body', async () => {
 		const user = userBodyFactory()
 
@@ -27,7 +33,7 @@ describe('POST /sign-up', () => {
 		const userCreated = await findUsersByEmail(user.email)
 
 		expect(response.status).toBe(201)
-		expect(userCreated.length).toEqual(1)
+		expect(userCreated).not.toBe(null)
 	})
 
 	it('should return status 409 given duplicated email', async () => {
@@ -52,9 +58,6 @@ describe('POST /sign-up', () => {
 })
 
 describe('POST /login', () => {
-	beforeEach(truncateUsers)
-	afterAll(disconnect)
-
 	it('should return status 200 and credentials given valid body', async () => {
 		const user = userBodyFactory()
 		await userFactory(user)
@@ -81,7 +84,7 @@ describe('POST /login', () => {
 			.post('/login')
 			.send({
 				...user,
-				password: '123456'
+				password: '123456',
 			})
 
 		expect(response.status).toBe(401)
@@ -102,15 +105,13 @@ describe('POST /token', () => {
 
 		const response = await supertest(app)
 			.post('/token')
-			.set('Authorization', token)
+			.set('Authorization', `Bearer ${token}`)
 
 		expect(response.status).toBe(200)
 	})
 
-	it('should return status 401 given invalid token format', async () => {
-		const response = await supertest(app)
-			.post('/token')
-			.set('Authorization', '')
+	it('should return status 401 given empty token', async () => {
+		const response = await supertest(app).post('/token')
 
 		expect(response.status).toBe(401)
 	})
@@ -120,217 +121,324 @@ describe('POST /token', () => {
 
 		const response = await supertest(app)
 			.post('/token')
-			.set('Authorization', token)
+			.set('Authorization', `Bearer ${token}`)
 
 		expect(response.status).toBe(404)
 	})
 
 	it('should return status 500 given expired token', async () => {
-		const expiredToken = expiredTokenFactory()
+		const token = expiredTokenFactory()
 
 		const response = await supertest(app)
 			.post('/token')
-			.set('Authorization', expiredToken)
+			.set('Authorization', `Bearer ${token}`)
 
 		expect(response.status).toBe(500)
 	})
 })
 
-describe('Tests routes', () => {
-	beforeEach(truncateTests)
-	afterAll(disconnect)
+describe('GET /tests/instructors', () => {
+	it('should return status 200 and an object given valid token', async () => {
+		const token = await tokenFactory()
 
-	describe('GET /tests/instructors', () => {
-		it('should return status 200 and an object given valid token', async () => {
-			const token = await tokenFactory()
+		const response = await supertest(app)
+			.get('/tests/instructors')
+			.set('Authorization', `Bearer ${token}`)
 
-			const response = await supertest(app)
-				.get('/tests/instructors')
-				.set('Authorization', token)
-
-			expect(response.body.length).toBeGreaterThanOrEqual(0)
-			expect(response.status).toBe(200)
-		})
-
-		it('should return status 401 given invalid token', async () => {
-			const response = await supertest(app)
-				.get('/tests/instructors')
-				.set('Authorization', '')
-
-			expect(response.status).toBe(401)
-		})
-
-		it("should return status 404 given token does't belong to a registered user", async () => {
-			const token = randomTokenFactory()
-
-			const response = await supertest(app)
-				.get('/tests/instructors')
-				.set('Authorization', token)
-
-			expect(response.status).toBe(404)
-		})
-
-		it('should return status 500 given expired token', async () => {
-			const expiredToken = expiredTokenFactory()
-
-			const response = await supertest(app)
-				.get('/tests/instructors')
-				.set('Authorization', expiredToken)
-
-			expect(response.status).toBe(500)
-		})
+		expectedResponseToValidToken(response)
 	})
 
-	describe('GET /tests/terms', () => {
-		it('should return status 200 and an object given valid token', async () => {
-			const token = await tokenFactory()
+	it('should return status 401 given empty token', async () => {
+		const response = await supertest(app).get('/tests/instructors')
 
-			const response = await supertest(app)
-				.get('/tests/terms')
-				.set('Authorization', token)
-
-			expect(response.body.length).toBeGreaterThanOrEqual(0)
-			expect(response.status).toBe(200)
-		})
-
-		it('should return status 401 given invalid token', async () => {
-			const response = await supertest(app)
-				.get('/tests/terms')
-				.set('Authorization', '')
-
-			expect(response.status).toBe(401)
-		})
-
-		it("should return status 404 given token does't belong to a registered user", async () => {
-			const token = randomTokenFactory()
-
-			const response = await supertest(app)
-				.get('/tests/terms')
-				.set('Authorization', token)
-
-			expect(response.status).toBe(404)
-		})
-
-		it('should return status 500 given expired token', async () => {
-			const expiredToken = expiredTokenFactory()
-
-			const response = await supertest(app)
-				.get('/tests/terms')
-				.set('Authorization', expiredToken)
-
-			expect(response.status).toBe(500)
-		})
+		expect(response.status).toBe(401)
 	})
 
-	describe('POST /tests/create', () => {
-		it('should return status 201 and persist the test given valid body and valid token', async () => {
-			const test = testBodyFactory()
+	it("should return status 404 given token does't belong to a registered user", async () => {
+		const token = randomTokenFactory()
 
-			const token = await tokenFactory()
+		const response = await supertest(app)
+			.get('/tests/instructors')
+			.set('Authorization', `Bearer ${token}`)
 
-			const response = await supertest(app)
-				.post('/tests/create')
-				.send(test)
-				.set('Authorization', token)
-
-			const createdPost = await prisma.test.findFirst({
-				where: { name: test.name }
-			})
-
-			expect(response.status).toBe(201)
-			expect(createdPost).not.toBe(null)
-		})
-
-		it('should return status 401 given invalid token', async () => {
-			const response = await supertest(app)
-				.post('/tests/create')
-				.set('Authorization', '')
-
-			expect(response.status).toBe(401)
-		})
-
-		it("should return status 404 given token doesn't belong to a registered user", async () => {
-			const token = randomTokenFactory()
-
-			const response = await supertest(app)
-				.post('/tests/create')
-				.set('Authorization', token)
-
-			expect(response.status).toBe(404)
-		})
-
-		it('should return status 500 given expired token', async () => {
-			const expiredToken = expiredTokenFactory()
-
-			const response = await supertest(app)
-				.post('/tests/create')
-				.set('Authorization', expiredToken)
-
-			expect(response.status).toBe(500)
-		})
-
-		it('should return status 422 given valid token but invalid body', async () => {
-			const token = await tokenFactory()
-
-			const response = await supertest(app)
-				.post('/tests/create')
-				.send({})
-				.set('Authorization', token)
-
-			expect(response.status).toBe(422)
-		})
+		expect(response.status).toBe(404)
 	})
 
-	describe('PATCH /tests/:id/views', () => {
-		it('should return status 200 and an object given valid token', async () => {
-			const test = testBodyFactory()
-			const createdTest = await testFactory(test)
+	it('should return status 500 given expired token', async () => {
+		const token = expiredTokenFactory()
 
-			const token = await tokenFactory()
+		const response = await supertest(app)
+			.get('/tests/instructors')
+			.set('Authorization', `Bearer ${token}`)
 
-			const response = await supertest(app)
-				.patch(`/tests/${createdTest.id}/views`)
-				.set('Authorization', token)
+		expect(response.status).toBe(500)
+	})
+})
 
-			expect(response.status).toBe(200)
-			expect(response.body).not.toBe(null)
-		})
+describe('GET /tests/terms', () => {
+	it('should return status 200 and an object given valid token', async () => {
+		const token = await tokenFactory()
 
-		it('should return status 401 given invalid token', async () => {
-			const test = testBodyFactory()
-			const createdTest = await testFactory(test)
+		const response = await supertest(app)
+			.get('/tests/terms')
+			.set('Authorization', `Bearer ${token}`)
 
-			const response = await supertest(app)
-				.patch(`/tests/${createdTest.id}/views`)
-				.set('Authorization', '')
+		expectedResponseToValidToken(response)
+	})
 
-			expect(response.status).toBe(401)
-		})
+	it('should return status 401 given empty token', async () => {
+		const response = await supertest(app).get('/tests/terms')
 
-		it("should return status 404 given token doesn't belong to a registered user", async () => {
-			const test = testBodyFactory()
-			const createdTest = await testFactory(test)
+		expect(response.status).toBe(401)
+	})
 
-			const token = randomTokenFactory()
+	it("should return status 404 given token does't belong to a registered user", async () => {
+		const token = randomTokenFactory()
 
-			const response = await supertest(app)
-				.patch(`/tests/${createdTest.id}/views`)
-				.set('Authorization', token)
+		const response = await supertest(app)
+			.get('/tests/terms')
+			.set('Authorization', `Bearer ${token}`)
 
-			expect(response.status).toBe(404)
-		})
+		expect(response.status).toBe(404)
+	})
 
-		it('should return status 500 given expired token', async () => {
-			const test = testBodyFactory()
-			const createdTest = await testFactory(test)
+	it('should return status 500 given expired token', async () => {
+		const token = expiredTokenFactory()
 
-			const expiredToken = expiredTokenFactory()
+		const response = await supertest(app)
+			.get('/tests/terms')
+			.set('Authorization', `Bearer ${token}`)
 
-			const response = await supertest(app)
-				.patch(`/tests/${createdTest.id}/views`)
-				.set('Authorization', expiredToken)
+		expect(response.status).toBe(500)
+	})
+})
 
-			expect(response.status).toBe(500)
-		})
+describe('POST /tests/create', () => {
+	it('should return status 201 and persist the test given valid body and valid token', async () => {
+		const test = testBodyFactory()
+
+		const token = await tokenFactory()
+
+		const response = await supertest(app)
+			.post('/tests/create')
+			.send(test)
+			.set('Authorization', `Bearer ${token}`)
+
+		const createdPost = await findTestByName(test.name)
+
+		expect(response.status).toBe(201)
+		expect(createdPost).not.toBe(null)
+	})
+
+	it('should return status 401 given empty token', async () => {
+		const response = await supertest(app).post('/tests/create')
+
+		expect(response.status).toBe(401)
+	})
+
+	it("should return status 404 given token doesn't belong to a registered user", async () => {
+		const token = randomTokenFactory()
+
+		const response = await supertest(app)
+			.post('/tests/create')
+			.set('Authorization', `Bearer ${token}`)
+
+		expect(response.status).toBe(404)
+	})
+
+	it('should return status 500 given expired token', async () => {
+		const token = expiredTokenFactory()
+
+		const response = await supertest(app)
+			.post('/tests/create')
+			.set('Authorization', `Bearer ${token}`)
+
+		expect(response.status).toBe(500)
+	})
+
+	it('should return status 422 given valid token but invalid body', async () => {
+		const token = await tokenFactory()
+
+		const response = await supertest(app)
+			.post('/tests/create')
+			.send({})
+			.set('Authorization', `Bearer ${token}`)
+
+		expect(response.status).toBe(422)
+	})
+})
+
+describe('PATCH /tests/:id/views', () => {
+	it('should return status 200 and an object given valid token', async () => {
+		const test = testBodyFactory()
+		const createdTest = await testFactory(test)
+
+		const token = await tokenFactory()
+
+		const response = await supertest(app)
+			.patch(`/tests/${createdTest.id}/views`)
+			.set('Authorization', `Bearer ${token}`)
+
+		expect(response.status).toBe(200)
+		expect(response.body.views).toEqual(createdTest.views + 1)
+	})
+
+	it('should return status 401 given empty token', async () => {
+		const test = testBodyFactory()
+		const createdTest = await testFactory(test)
+
+		const response = await supertest(app).patch(
+			`/tests/${createdTest.id}/views`
+		)
+
+		expect(response.status).toBe(401)
+	})
+
+	it("should return status 404 given token doesn't belong to a registered user", async () => {
+		const test = testBodyFactory()
+		const createdTest = await testFactory(test)
+
+		const token = randomTokenFactory()
+
+		const response = await supertest(app)
+			.patch(`/tests/${createdTest.id}/views`)
+			.set('Authorization', `Bearer ${token}`)
+
+		expect(response.status).toBe(404)
+	})
+
+	it('should return status 500 given expired token', async () => {
+		const test = testBodyFactory()
+		const createdTest = await testFactory(test)
+
+		const token = expiredTokenFactory()
+
+		const response = await supertest(app)
+			.patch(`/tests/${createdTest.id}/views`)
+			.set('Authorization', `Bearer ${token}`)
+
+		expect(response.status).toBe(500)
+	})
+})
+
+describe('GET /instructors/:disciplineId', () => {
+	it('should return status 200 and an object given valid token', async () => {
+		const discipline = await findDiscipline()
+
+		const token = await tokenFactory()
+
+		const response = await supertest(app)
+			.get(`/instructors/${discipline.id}`)
+			.set('Authorization', `Bearer ${token}`)
+
+		expectedResponseToValidToken(response)
+	})
+
+	it('should return status 401 given empty token', async () => {
+		const discipline = await findDiscipline()
+
+		const response = await supertest(app).get(`/instructors/${discipline.id}`)
+
+		expect(response.status).toBe(401)
+	})
+
+	it("should return status 404 given token doesn't belong to a registered user", async () => {
+		const discipline = await findDiscipline()
+
+		const token = randomTokenFactory()
+
+		const response = await supertest(app)
+			.get(`/instructors/${discipline.id}`)
+			.set('Authorization', `Bearer ${token}`)
+
+		expect(response.status).toBe(404)
+	})
+
+	it('should return status 500 given expired token', async () => {
+		const discipline = await findDiscipline()
+
+		const token = expiredTokenFactory()
+
+		const response = await supertest(app)
+			.get(`/instructors/${discipline.id}`)
+			.set('Authorization', `Bearer ${token}`)
+
+		expect(response.status).toBe(500)
+	})
+})
+
+describe('GET /disciplines', () => {
+	it('should return status 200 and an object given valid token', async () => {
+		const token = await tokenFactory()
+
+		const response = await supertest(app)
+			.get('/disciplines')
+			.set('Authorization', `Bearer ${token}`)
+
+		expectedResponseToValidToken(response)
+	})
+
+	it('should return status 401 given empty token', async () => {
+		const response = await supertest(app).get('/disciplines')
+
+		expect(response.status).toBe(401)
+	})
+
+	it("should return status 404 given token doesn't belong to a registered user", async () => {
+		const token = randomTokenFactory()
+
+		const response = await supertest(app)
+			.get('/disciplines')
+			.set('Authorization', `Bearer ${token}`)
+
+		expect(response.status).toBe(404)
+	})
+
+	it('should return status 500 given expired token', async () => {
+		const token = expiredTokenFactory()
+
+		const response = await supertest(app)
+			.get('/disciplines')
+			.set('Authorization', `Bearer ${token}`)
+
+		expect(response.status).toBe(500)
+	})
+})
+
+describe('GET /categories', () => {
+	it('should return status 200 and an object given valid token', async () => {
+		const token = await tokenFactory()
+
+		const response = await supertest(app)
+			.get('/categories')
+			.set('Authorization', `Bearer ${token}`)
+
+		expectedResponseToValidToken(response)
+	})
+
+	it('should return status 401 given empty token', async () => {
+		const response = await supertest(app).get('/categories')
+
+		expect(response.status).toBe(401)
+	})
+
+	it("should return status 404 given token doesn't belong to a registered user", async () => {
+		const token = randomTokenFactory()
+
+		const response = await supertest(app)
+			.get('/categories')
+			.set('Authorization', `Bearer ${token}`)
+
+		expect(response.status).toBe(404)
+	})
+
+	it('should return status 500 given expired token', async () => {
+		const token = expiredTokenFactory()
+
+		const response = await supertest(app)
+			.get('/categories')
+			.set('Authorization', `Bearer ${token}`)
+
+		expect(response.status).toBe(500)
 	})
 })
