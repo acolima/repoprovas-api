@@ -9,8 +9,9 @@
     "start": "node build/server.js",
     "dev": "fuser -k 4000/tcp & npx nodemon src/server.ts",
     "test": "NODE_OPTIONS=--experimental-vm-modules dotenv -e .env.test jest -i",
-    "test-migrate": "npx dotenv -e .env.test prisma migrate dev",
-    "prisma-studio-test": "npx dotenv -e .env.test prisma studio"
+    "test:migrate": "npx dotenv -e .env.test prisma migrate dev",
+    "test:prisma-studio": "npx dotenv -e .env.test prisma studio",
+    "test:seed": "npx dotenv -e .env.test prisma db seed"
   },
   "keywords": [],
   "author": "",
