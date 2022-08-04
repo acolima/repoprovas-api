@@ -1,21 +1,13 @@
-import { Router } from 'express'
-import * as authController from '../controllers/authController.js'
-import { schemaValidation } from '../middlewares/schemaValidationMiddleware.js'
-import { tokenValidation } from '../middlewares/tokenValidationMiddleware.js'
-import userSchema from '../schemas/userSchema.js'
+import { Router } from 'express';
+import * as authController from '../controllers/authController.js';
+import { schemaValidation } from '../middlewares/schemaValidationMiddleware.js';
+import { tokenValidation } from '../middlewares/tokenValidationMiddleware.js';
+import userSchema from '../schemas/userSchema.js';
 
-const authRouter = Router()
+const authRouter = Router();
 
-authRouter.post(
-  '/login', 
-  schemaValidation(userSchema), 
-  authController.login
-)
+authRouter.post('/sign-in', schemaValidation(userSchema), authController.login);
 
-authRouter.post(
-  '/token', 
-  tokenValidation, 
-  (req, res) => res.sendStatus(200)
-)
+authRouter.post('/sign-out', tokenValidation, (_, res) => res.sendStatus(200));
 
-export default authRouter
+export default authRouter;

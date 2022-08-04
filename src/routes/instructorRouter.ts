@@ -1,13 +1,13 @@
-import { Router } from 'express'
-import * as instructorController from '../controllers/instructorController.js'
-import { tokenValidation } from '../middlewares/tokenValidationMiddleware.js'
+import { Router } from 'express';
+import * as instructorController from '../controllers/instructorController.js';
+import { tokenValidation } from '../middlewares/tokenValidationMiddleware.js';
 
-const instructorRouter = Router()
+const instructorRouter = Router();
 
 instructorRouter.get(
-	'/instructors/:disciplineId',
+	'/:disciplineId',
 	tokenValidation,
 	instructorController.getInstructorByDiscipline
-)
+);
 
-export default instructorRouter
+export default instructorRouter;
